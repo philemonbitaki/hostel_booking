@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Working Dashboard</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background: #f5f5f5; padding: 20px; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .header { background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .section { background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .btn { padding: 12px 20px; margin: 5px; border: none; border-radius: 5px; font-size: 14px; font-weight: bold; cursor: pointer; color: white; }
+        .btn-red { background: #dc2626; }
+        .btn-blue { background: #2563eb; }
+        .btn-green { background: #16a34a; }
+        .btn:hover { opacity: 0.8; }
+        .booking { background: #f9fafb; padding: 15px; margin: 10px 0; border-left: 4px solid #3b82f6; border-radius: 4px; }
+        .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; }
+        .stat-card { background: white; padding: 20px; border-radius: 8px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .status { background: #e5e7eb; padding: 10px; border-radius: 4px; margin: 10px 0; }
+        .confirmed { background: #dcfce7; color: #166534; padding: 4px 8px; border-radius: 4px; font-size: 12px; }
+        .cancelled { background: #fecaca; color: #991b1b; padding: 4px 8px; border-radius: 4px; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 Admin Dashboard</h1>
+            <p>Booking Management System</p>
+        </div>
+
+        <div class="section">
+            <h2>🎛️ Manage Bookings</h2>
+            <p>View and manage all reservations</p>
+            
+            <div style="text-align: center; margin: 20px 0;">
+                <button class="btn btn-red" onclick="clearAll()">🗑️ DELETE ALL</button>
+                <button class="btn btn-blue" onclick="reloadAll()">🔄 RELOAD</button>
+                <button class="btn btn-green" onclick="showCount()">📊 COUNT</button>
+            </div>
+            
+            <div class="status" id="status">
+                <strong>Status:</strong> <span id="statusText">Ready</span>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>📋 Customer Bookings</h2>
+            <div id="bookingsList"></div>
+        </div>
+
+        <div class="stats">
+            <div class="stat-card">
+                <div style="color: #6b7280; font-size: 14px;">Total</div>
+                <div id="total" style="font-size: 24px; font-weight: bold;">0</div>
+            </div>
+            <div class="stat-card">
+                <div style="color: #6b7280; font-size: 14px;">Confirmed</div>
+                <div id="confirmed" style="font-size: 24px; font-weight: bold; color: #16a34a;">0</div>
+            </div>
+            <div class="stat-card">
+                <div style="color: #6b7280; font-size: 14px;">Cancelled</div>
+                <div id="cancelled" style="font-size: 24px; font-weight: bold; color: #dc2626;">0</div>
+            </div>
+            <div class="stat-card">
+                <div style="color: #6b7280; font-size: 14px;">Revenue</div>
+                <div id="revenue" style="font-size: 24px; font-weight: bold; color: #2563eb;">$0</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Data
+        const initialData = [
+            { id: 1, guest: 'Marie Dubois', email: 'marie@email.com', room: 'New Generation', price: 360, status: 'confirmed' },
+            { id: 2, guest: 'Jean Martin', email: 'jean@email.com', room: 'Annex', price: 405, status: 'cancelled' },
+            { id: 3, guest: 'Sophie Bernard', email: 'sophie@email.com', room: 'Hudreb', price: 495, status: 'confirmed' },
+            { id: 4, guest: 'Pierre Leroy', email: 'pierre@email.com', room: 'Campus View Residence', price: 2250, status: 'confirmed' },
+            { id: 5, guest: 'Claire Petit', email: 'claire@email.com', room: "Scholar's Hub", price: 270, status: 'confirmed' },
+            { id: 6, guest: 'Lucas Robert', email: 'lucas@email.com', room: 'Green Campus Dorm', price: 315, status: 'cancelled' },
+            { id: 7, guest: 'Emma Moreau', email: 'emma@email.com', room: 'New Generation', price: 405, status: 'cancelled' }
+        ];
+
+        let bookings = [...initialData];
+
+        // Functions
+        function updateStatus(msg) {
+            document.getElementById('statusText').textContent = msg;
+            console.log('Status:', msg);
+        }
+
+        function showCount() {
+            alert('📊 Bookings: ' + bookings.length);
+            updateStatus('Count: ' + bookings.length);
+        }
+
+        function clearAll() {
+            if (confirm('Delete ALL bookings?')) {
+                bookings = [];
+                render();
+                updateStatus('All deleted!');
+                alert('✅ All bookings deleted!');
+            }
+        }
+
+        function reloadAll() {
+            if (confirm('Reload all bookings?')) {
+                bookings = [...initialData];
+                render();
+                updateStatus('Reloaded!');
+                alert('✅ Bookings reloaded!');
+            }
+        }
+
+        function render() {
+            const list = document.getElementById('bookingsList');
+            
+            if (bookings.length === 0) {
+                list.innerHTML = '<div style="text-align: center; padding: 40px; color: #666;">📭 No bookings found</div>';
+            } else {
+                list.innerHTML = bookings.map(b => `
+                    <div class="booking">
+                        <div style="font-weight: bold;">${b.guest}</div>
+                        <div style="color: #666; font-size: 14px;">${b.email}</div>
+                        <div style="color: #666; font-size: 14px;">${b.room} - $${b.price}</div>
+                        <span class="${b.status}">${b.status}</span>
+                    </div>
+                `).join('');
+            }
+
+            // Update stats
+            const total = bookings.length;
+            const confirmed = bookings.filter(b => b.status === 'confirmed').length;
+            const cancelled = bookings.filter(b => b.status === 'cancelled').length;
+            const revenue = bookings.filter(b => b.status === 'confirmed').reduce((sum, b) => sum + b.price, 0);
+
+            document.getElementById('total').textContent = total;
+            document.getElementById('confirmed').textContent = confirmed;
+            document.getElementById('cancelled').textContent = cancelled;
+            document.getElementById('revenue').textContent = '$' + revenue;
+        }
+
+        // Initialize
+        window.onload = function() {
+            render();
+            updateStatus('Dashboard loaded successfully!');
+            alert('🎉 Dashboard is ready!');
+        };
+    </script>
+</body>
+</html>

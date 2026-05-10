@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Test - Réservations</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50">
+    <div class="min-h-screen p-8">
+        <h1 class="text-3xl font-bold mb-6">Dashboard Admin - Test</h1>
+        
+        <!-- Section de test -->
+        <div class="bg-white rounded-lg shadow p-6 mb-6">
+            <h2 class="text-xl font-semibold mb-4">Manage Bookings</h2>
+            <p class="text-gray-600 mb-4">View and manage all reservations</p>
+            
+            <div class="flex space-x-4 mb-6">
+                <button 
+                    onclick="testClear()"
+                    class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
+                >
+                    🗑️ Supprimer tout (TEST)
+                </button>
+                <button 
+                    onclick="testReload()"
+                    class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+                >
+                    🔄 Recharger (TEST)
+                </button>
+                <button 
+                    onclick="showCount()"
+                    class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+                >
+                    📊 Voir le nombre
+                </button>
+            </div>
+            
+            <div id="status" class="bg-gray-100 p-4 rounded">
+                <strong>Statut:</strong> <span id="statusText">Prêt</span>
+            </div>
+        </div>
+
+        <!-- Tableau des réservations -->
+        <div class="bg-white rounded-lg shadow">
+            <div class="p-6">
+                <h3 class="text-lg font-semibold mb-4">Réservations des Clients</h3>
+                <div id="bookingsList">
+                    <!-- Les réservations seront affichées ici -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistiques -->
+        <div class="mt-6 grid grid-cols-4 gap-4">
+            <div class="bg-white rounded-lg shadow p-4">
+                <div class="text-sm text-gray-500">Total</div>
+                <div id="totalCount" class="text-2xl font-bold">0</div>
+            </div>
+            <div class="bg-white rounded-lg shadow p-4">
+                <div class="text-sm text-gray-500">Confirmées</div>
+                <div id="confirmedCount" class="text-2xl font-bold text-green-600">0</div>
+            </div>
+            <div class="bg-white rounded-lg shadow p-4">
+                <div class="text-sm text-gray-500">Annulées</div>
+                <div id="cancelledCount" class="text-2xl font-bold text-red-600">0</div>
+            </div>
+            <div class="bg-white rounded-lg shadow p-4">
+                <div class="text-sm text-gray-500">Revenu</div>
+                <div id="revenue" class="text-2xl font-bold text-blue-600">$0</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Données initiales
+        const initialBookings = [
+            { id: '1', guestName: 'Marie Dubois', guestEmail: 'marie@email.com', roomName: 'Single', amount: 360, status: 'confirmed' },
+            { id: '2', guestName: 'Jean Martin', guestEmail: 'jean@email.com', roomName: 'Single', amount: 405, status: 'cancelled' },
+            { id: '3', guestName: 'Sophie Bernard', guestEmail: 'sophie@email.com', roomName: 'Single', amount: 495, status: 'confirmed' },
+            { id: '4', guestName: 'Pierre Leroy', guestEmail: 'pierre@email.com', roomName: 'Deluxe Suite', amount: 2250, status: 'confirmed' },
+            { id: '5', guestName: 'Claire Petit', guestEmail: 'claire@email.com', roomName: 'Single', amount: 270, status: 'confirmed' },
+            { id: '6', guestName: 'Lucas Robert', guestEmail: 'lucas@email.com', roomName: 'Single', amount: 315, status: 'cancelled' },
+            { id: '7', guestName: 'Emma Moreau', guestEmail: 'emma@email.com', roomName: 'Single', amount: 405, status: 'cancelled' }
+        ];
+
+        // Tableau actif
+        let bookings = [...initialBookings];
+
+        // Fonctions de test avec alertes
+        function updateStatus(message) {
+            document.getElementById('statusText').textContent = message;
+            console.log('STATUT:', message);
+        }
+
+        function showCount() {
+            alert(`Nombre de réservations: ${bookings.length}`);
+            updateStatus(`Affiché: ${bookings.length} réservations`);
+        }
+
+        function testClear() {
+            updateStatus('Tentative de suppression...');
+            alert('TEST: Vous avez cliqué sur "Supprimer tout"');
+            
+            if (confirm('Voulez-vous vraiment supprimer TOUTES les réservations?')) {
+                bookings = [];
+                renderBookings();
+                updateStatus('Toutes les réservations ont été supprimées!');
+                alert('✅ SUCCÈS: Toutes les réservations supprimées!');
+            } else {
+                updateStatus('Suppression annulée');
+            }
+        }
+
+        function testReload() {
+            updateStatus('Tentative de rechargement...');
+            alert('TEST: Vous avez cliqué sur "Recharger"');
+            
+            if (confirm('Voulez-vous recharger les réservations initiales?')) {
+                bookings = [...initialBookings];
+                renderBookings();
+                updateStatus('Réservations rechargées avec succès!');
+                alert('✅ SUCCÈS: Réservations rechargées!');
+            } else {
+                updateStatus('Rechargement annulé');
+            }
+        }
+
+        function renderBookings() {
+            const container = document.getElementById('bookingsList');
+            
+            if (bookings.length === 0) {
+                container.innerHTML = '<div class="text-center py-8 text-gray-500">📭 Aucune réservation trouvée</div>';
+            } else {
+                let html = '<div class="space-y-2">';
+                bookings.forEach(booking => {
+                    const statusColor = booking.status === 'confirmed' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800';
+                    html += `
+                        <div class="border p-3 rounded flex justify-between items-center">
+                            <div>
+                                <strong>${booking.guestName}</strong> - ${booking.guestEmail}<br>
+                                <span class="text-sm text-gray-600">${booking.roomName} - $${booking.amount}</span>
+                            </div>
+                            <span class="px-2 py-1 text-xs rounded-full ${statusColor}">${booking.status}</span>
+                        </div>
+                    `;
+                });
+                html += '</div>';
+                container.innerHTML = html;
+            }
+            
+            updateStats();
+        }
+
+        function updateStats() {
+            const total = bookings.length;
+            const confirmed = bookings.filter(b => b.status === 'confirmed').length;
+            const cancelled = bookings.filter(b => b.status === 'cancelled').length;
+            const revenue = bookings.filter(b => b.status === 'confirmed').reduce((sum, b) => sum + b.amount, 0);
+
+            document.getElementById('totalCount').textContent = total;
+            document.getElementById('confirmedCount').textContent = confirmed;
+            document.getElementById('cancelledCount').textContent = cancelled;
+            document.getElementById('revenue').textContent = '$' + revenue;
+        }
+
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', function() {
+            updateStatus('Dashboard chargé - Prêt à utiliser');
+            renderBookings();
+            console.log('Dashboard initialisé avec', bookings.length, 'réservations');
+        });
+
+        // Debug: afficher les erreurs
+        window.onerror = function(msg, url, line) {
+            alert('ERREUR: ' + msg + '\nLigne: ' + line);
+            updateStatus('ERREUR: ' + msg);
+            return false;
+        };
+    </script>
+</body>
+</html>

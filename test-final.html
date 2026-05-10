@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>TEST DASHBOARD</title>
+    <style>
+        body { font-family: Arial; padding: 20px; background: #f0f0f0; }
+        .container { max-width: 800px; margin: 0 auto; background: white; padding: 20px; border-radius: 10px; }
+        button { padding: 15px 30px; margin: 10px; font-size: 16px; border: none; border-radius: 5px; cursor: pointer; }
+        .red { background: #ff4444; color: white; }
+        .blue { background: #4444ff; color: white; }
+        .green { background: #44ff44; color: white; }
+        .booking { border: 1px solid #ddd; padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .status { background: #ffffcc; padding: 10px; margin: 10px 0; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📊 ADMIN DASHBOARD TEST</h1>
+        <p><strong>Ceci est un test pour vérifier que tout fonctionne</strong></p>
+        
+        <div class="status">
+            <strong>STATUT:</strong> <span id="status">Prêt - Test en cours</span>
+        </div>
+        
+        <h2>🎛️ BOUTONS DE TEST</h2>
+        <button class="red" onclick="testDelete()">🗑️ SUPPRIMER TOUT</button>
+        <button class="blue" onclick="testReload()">🔄 RECHARGER</button>
+        <button class="green" onclick="testCount()">📊 COMPTER</button>
+        
+        <h2>📋 RÉSERVATIONS</h2>
+        <div id="bookings"></div>
+        
+        <h2>📈 STATISTIQUES</h2>
+        <p><strong>Total:</strong> <span id="total">0</span></p>
+        <p><strong>Confirmées:</strong> <span id="confirmed">0</span></p>
+        <p><strong>Annulées:</strong> <span id="cancelled">0</span></p>
+        <p><strong>Revenu:</strong> $<span id="revenue">0</span></p>
+    </div>
+
+    <script>
+        // DONNÉES DE TEST
+        const data = [
+            {id: 1, nom: 'Marie Dubois', email: 'marie@email.com', hostel: 'New Generation', prix: 360, statut: 'confirmé'},
+            {id: 2, nom: 'Jean Martin', email: 'jean@email.com', hostel: 'Annex', prix: 405, statut: 'annulé'},
+            {id: 3, nom: 'Sophie Bernard', email: 'sophie@email.com', hostel: 'Hudreb', prix: 495, statut: 'confirmé'},
+            {id: 4, nom: 'Pierre Leroy', email: 'pierre@email.com', hostel: 'Campus View Residence', prix: 2250, statut: 'confirmé'},
+            {id: 5, nom: 'Claire Petit', email: 'claire@email.com', hostel: "Scholar's Hub", prix: 270, statut: 'confirmé'},
+            {id: 6, nom: 'Lucas Robert', email: 'lucas@email.com', hostel: 'Green Campus Dorm', prix: 315, statut: 'annulé'},
+            {id: 7, nom: 'Emma Moreau', email: 'emma@email.com', hostel: 'New Generation', prix: 405, statut: 'annulé'}
+        ];
+
+        let reservations = [...data];
+
+        // FONCTIONS
+        function updateStatus(msg) {
+            document.getElementById('status').textContent = msg;
+            console.log('STATUS:', msg);
+        }
+
+        function afficherReservations() {
+            const container = document.getElementById('bookings');
+            
+            if (reservations.length === 0) {
+                container.innerHTML = '<div style="text-align: center; padding: 20px; color: red;">📭 AUCUNE RÉSERVATION</div>';
+            } else {
+                container.innerHTML = reservations.map(r => `
+                    <div class="booking">
+                        <strong>${r.nom}</strong><br>
+                        <small>${r.email}</small><br>
+                        <small>${r.hostel} - $${r.prix}</small><br>
+                        <span style="background: ${r.statut === 'confirmé' ? '#ccffcc' : '#ffcccc'}; padding: 2px 8px; border-radius: 3px;">
+                            ${r.statut}
+                        </span>
+                    </div>
+                `).join('');
+            }
+            
+            updateStats();
+        }
+
+        function updateStats() {
+            const total = reservations.length;
+            const confirmed = reservations.filter(r => r.statut === 'confirmé').length;
+            const cancelled = reservations.filter(r => r.statut === 'annulé').length;
+            const revenue = reservations.filter(r => r.statut === 'confirmé').reduce((sum, r) => sum + r.prix, 0);
+
+            document.getElementById('total').textContent = total;
+            document.getElementById('confirmed').textContent = confirmed;
+            document.getElementById('cancelled').textContent = cancelled;
+            document.getElementById('revenue').textContent = revenue;
+        }
+
+        function testDelete() {
+            alert('TEST: Bouton SUPPRIMER cliqué!');
+            updateStatus('Test suppression en cours...');
+            
+            if (confirm('Voulez-vous vraiment supprimer TOUT?')) {
+                reservations = [];
+                afficherReservations();
+                updateStatus('✅ TOUT SUPPRIMÉ!');
+                alert('SUCCÈS: Tout a été supprimé!');
+            } else {
+                updateStatus('❌ Suppression annulée');
+            }
+        }
+
+        function testReload() {
+            alert('TEST: Bouton RECHARGER cliqué!');
+            updateStatus('Test rechargement en cours...');
+            
+            if (confirm('Voulez-vous recharger les données?')) {
+                reservations = [...data];
+                afficherReservations();
+                updateStatus('✅ DONNÉES RECHARGÉES!');
+                alert('SUCCÈS: Données rechargées!');
+            } else {
+                updateStatus('❌ Rechargement annulé');
+            }
+        }
+
+        function testCount() {
+            const count = reservations.length;
+            alert(`TEST: Il y a ${count} réservations`);
+            updateStatus(`Compté: ${count} réservations`);
+        }
+
+        // INITIALISATION
+        window.onload = function() {
+            alert('🎉 PAGE CHARGÉE! Test du dashboard...');
+            updateStatus('Dashboard chargé - Testons les boutons');
+            afficherReservations();
+        };
+    </script>
+</body>
+</html>

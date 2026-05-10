@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Réservations</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .button { background: #007bff; color: white; padding: 10px 20px; margin: 5px; border: none; cursor: pointer; }
+        .button:hover { background: #0056b3; }
+        .booking { background: #f8f9fa; padding: 10px; margin: 10px 0; border-left: 4px solid #007bff; }
+        .error { color: red; }
+        .success { color: green; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Test Réservations - Diagnostic</h1>
+    
+    <div>
+        <button class="button" onclick="testLocalStorage()">Tester LocalStorage</button>
+        <button class="button" onclick="addTestBooking()">Ajouter Réservation Test</button>
+        <button class="button" onclick="showBookings()">Afficher Réservations</button>
+        <button class="button" onclick="clearBookings()">Effacer Tout</button>
+    </div>
+
+    <div id="output"></div>
+
+    <script>
+        function log(message, type = 'info') {
+            const output = document.getElementById('output');
+            const div = document.createElement('div');
+            div.className = type;
+            div.innerHTML = `<strong>${new Date().toLocaleTimeString()}:</strong> ${message}`;
+            output.appendChild(div);
+            console.log(message);
+        }
+
+        function testLocalStorage() {
+            try {
+                localStorage.setItem('test', 'ok');
+                const value = localStorage.getItem('test');
+                if (value === 'ok') {
+                    log('✅ LocalStorage fonctionne correctement', 'success');
+                } else {
+                    log('❌ LocalStorage ne fonctionne pas', 'error');
+                }
+            } catch (error) {
+                log(`❌ Erreur LocalStorage: ${error.message}`, 'error');
+            }
+        }
+
+        function addTestBooking() {
+            try {
+                const booking = {
+                    id: `test-${Date.now()}`,
+                    guestName: 'Client Test',
+                    guestEmail: 'test@email.com',
+                    guestPhone: '+33 6 12 34 56 78',
+                    roomName: 'Chambre Test',
+                    checkIn: new Date().toISOString().split('T')[0],
+                    checkOut: new Date(Date.now() + 86400000 * 3).toISOString().split('T')[0],
+                    nights: 3,
+                    amount: 150,
+                    status: 'confirmed',
+                    createdAt: new Date().toISOString()
+                };
+
+                const existing = JSON.parse(localStorage.getItem('realBookings') || '[]');
+                existing.push(booking);
+                localStorage.setItem('realBookings', JSON.stringify(existing));
+                
+                log(`✅ Réservation ajoutée: ${booking.guestName} - ${booking.guestEmail}`, 'success');
+                showBookings();
+            } catch (error) {
+                log(`❌ Erreur ajout réservation: ${error.message}`, 'error');
+            }
+        }
+
+        function showBookings() {
+            try {
+                const bookings = JSON.parse(localStorage.getItem('realBookings') || '[]');
+                
+                if (bookings.length === 0) {
+                    log('📭 Aucune réservation trouvée', 'info');
+                } else {
+                    log(`📋 ${bookings.length} réservation(s) trouvée(s):`, 'success');
+                    bookings.forEach((booking, index) => {
+                        log(`  ${index + 1}. ${booking.guestName} - ${booking.guestEmail} - ${booking.amount}€`, 'info');
+                    });
+                }
+            } catch (error) {
+                log(`❌ Erreur lecture réservations: ${error.message}`, 'error');
+            }
+        }
+
+        function clearBookings() {
+            try {
+                localStorage.removeItem('realBookings');
+                log('🗑️ Toutes les réservations ont été effacées', 'success');
+                showBookings();
+            } catch (error) {
+                log(`❌ Erreur effacement: ${error.message}`, 'error');
+            }
+        }
+
+        // Test automatique au chargement
+        window.onload = function() {
+            log('🚀 Page de test chargée', 'info');
+            testLocalStorage();
+            showBookings();
+        };
+    </script>
+</body>
+</html>

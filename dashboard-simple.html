@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Simple</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f3f4f6;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .header {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .button-section {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .btn {
+            padding: 15px 25px;
+            margin: 10px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            display: inline-block;
+        }
+        .btn-red {
+            background-color: #dc2626;
+            color: white;
+        }
+        .btn-blue {
+            background-color: #2563eb;
+            color: white;
+        }
+        .btn-green {
+            background-color: #16a34a;
+            color: white;
+        }
+        .btn:hover {
+            opacity: 0.8;
+        }
+        .content {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .booking-item {
+            background-color: #f9fafb;
+            padding: 15px;
+            margin: 10px 0;
+            border-left: 4px solid #3b82f6;
+            border-radius: 4px;
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .stat-card {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .status {
+            background-color: #e5e7eb;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1 style="color: #1f2937; font-size: 32px; margin: 0;">📊 Dashboard Admin</h1>
+            <p style="color: #6b7280; margin: 5px 0;">Gestion des réservations</p>
+        </div>
+
+        <!-- Section des boutons -->
+        <div class="button-section">
+            <h2 style="color: #1f2937; margin-bottom: 15px;">🎛️ Manage Bookings</h2>
+            <p style="color: #6b7280; margin-bottom: 20px;">View and manage all reservations</p>
+            
+            <!-- BOUTONS TRES VISIBLES -->
+            <div style="text-align: center;">
+                <button class="btn btn-red" onclick="supprimerTout()">
+                    🗑️ SUPPRIMER TOUTES LES RÉSERVATIONS
+                </button>
+                <button class="btn btn-blue" onclick="rechargerTout()">
+                    🔄 RECHARGER LES RÉSERVATIONS
+                </button>
+                <button class="btn btn-green" onclick="voirNombre()">
+                    📊 VOIR LE NOMBRE
+                </button>
+            </div>
+            
+            <!-- Zone de statut -->
+            <div class="status" id="zoneStatus">
+                <strong>Statut:</strong> <span id="texteStatus">Prêt - Cliquez sur un bouton</span>
+            </div>
+        </div>
+
+        <!-- Contenu principal -->
+        <div class="content">
+            <h2 style="color: #1f2937; margin-bottom: 20px;">📋 Réservations des Clients</h2>
+            <div id="listeReservations">
+                <!-- Les réservations s'afficheront ici -->
+            </div>
+        </div>
+
+        <!-- Statistiques -->
+        <div class="stats">
+            <div class="stat-card">
+                <div style="color: #6b7280; font-size: 14px;">Total Réservations</div>
+                <div id="total" style="font-size: 24px; font-weight: bold; color: #1f2937;">0</div>
+            </div>
+            <div class="stat-card">
+                <div style="color: #6b7280; font-size: 14px;">Confirmées</div>
+                <div id="confirmees" style="font-size: 24px; font-weight: bold; color: #16a34a;">0</div>
+            </div>
+            <div class="stat-card">
+                <div style="color: #6b7280; font-size: 14px;">Annulées</div>
+                <div id="annulees" style="font-size: 24px; font-weight: bold; color: #dc2626;">0</div>
+            </div>
+            <div class="stat-card">
+                <div style="color: #6b7280; font-size: 14px;">Revenu Total</div>
+                <div id="revenu" style="font-size: 24px; font-weight: bold; color: #2563eb;">$0</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Données des réservations
+        const donneesInitiales = [
+            { id: '1', nom: 'Marie Dubois', email: 'marie@email.com', chambre: 'New Generation', prix: 360, statut: 'confirmé' },
+            { id: '2', nom: 'Jean Martin', email: 'jean@email.com', chambre: 'Annex', prix: 405, statut: 'annulé' },
+            { id: '3', nom: 'Sophie Bernard', email: 'sophie@email.com', chambre: 'Hudreb', prix: 495, statut: 'confirmé' },
+            { id: '4', nom: 'Pierre Leroy', email: 'pierre@email.com', chambre: 'Campus View Residence', prix: 2250, statut: 'confirmé' },
+            { id: '5', nom: 'Claire Petit', email: 'claire@email.com', chambre: "Scholar's Hub", prix: 270, statut: 'confirmé' },
+            { id: '6', nom: 'Lucas Robert', email: 'lucas@email.com', chambre: 'Green Campus Dorm', prix: 315, statut: 'annulé' },
+            { id: '7', nom: 'Emma Moreau', email: 'emma@email.com', chambre: 'New Generation', prix: 405, statut: 'annulé' }
+        ];
+
+        // Réservations actuelles
+        let reservations = [...donneesInitiales];
+
+        // Fonction pour mettre à jour le statut
+        function mettreAJourStatut(message) {
+            document.getElementById('texteStatus').textContent = message;
+            console.log('STATUT:', message);
+        }
+
+        // Fonction pour voir le nombre
+        function voirNombre() {
+            alert('📊 NOMBRE DE RÉSERVATIONS: ' + reservations.length);
+            mettreAJourStatut('Nombre affiché: ' + reservations.length + ' réservations');
+        }
+
+        // Fonction pour supprimer tout
+        function supprimerTout() {
+            mettreAJourStatut('Tentative de suppression...');
+            alert('⚠️ VOUS AVEZ CLIQUÉ SUR "SUPPRIMER TOUT"');
+            
+            if (confirm('🚨 ATTENTION! Voulez-vous vraiment supprimer TOUTES les réservations?')) {
+                reservations = [];
+                afficherReservations();
+                mettreAJourStatut('✅ TOUTES LES RÉSERVATIONS ONT ÉTÉ SUPPRIMÉES!');
+                alert('✅ SUCCÈS! Toutes les réservations ont été supprimées!');
+            } else {
+                mettreAJourStatut('❌ Suppression annulée');
+            }
+        }
+
+        // Fonction pour recharger tout
+        function rechargerTout() {
+            mettreAJourStatut('Tentative de rechargement...');
+            alert('🔄 VOUS AVEZ CLIQUÉ SUR "RECHARGER"');
+            
+            if (confirm('🔄 Voulez-vous recharger toutes les réservations initiales?')) {
+                reservations = [...donneesInitiales];
+                afficherReservations();
+                mettreAJourStatut('✅ RÉSERVATIONS RECHARGÉES AVEC SUCCÈS!');
+                alert('✅ SUCCÈS! Les réservations ont été rechargées!');
+            } else {
+                mettreAJourStatut('❌ Rechargement annulé');
+            }
+        }
+
+        // Fonction pour afficher les réservations
+        function afficherReservations() {
+            const container = document.getElementById('listeReservations');
+            
+            if (reservations.length === 0) {
+                container.innerHTML = '<div style="text-align: center; padding: 40px; color: #6b7280; font-size: 18px;">📭 AUCUNE RÉSERVATION TROUVÉE</div>';
+            } else {
+                let html = '';
+                reservations.forEach(reservation => {
+                    const couleurStatut = reservation.statut === 'confirmé' ? '#16a34a' : '#dc2626';
+                    html += `
+                        <div class="booking-item">
+                            <div style="font-weight: bold; color: #1f2937;">${reservation.nom}</div>
+                            <div style="color: #6b7280;">${reservation.email}</div>
+                            <div style="color: #6b7280;">${reservation.chambre} - $${reservation.prix}</div>
+                            <div style="display: inline-block; padding: 4px 8px; background-color: ${couleurStatut}; color: white; border-radius: 4px; font-size: 12px; margin-top: 5px;">
+                                ${reservation.statut}
+                            </div>
+                        </div>
+                    `;
+                });
+                container.innerHTML = html;
+            }
+            
+            mettreAJourStatistiques();
+        }
+
+        // Fonction pour mettre à jour les statistiques
+        function mettreAJourStatistiques() {
+            const total = reservations.length;
+            const confirmees = reservations.filter(r => r.statut === 'confirmé').length;
+            const annulees = reservations.filter(r => r.statut === 'annulé').length;
+            const revenu = reservations.filter(r => r.statut === 'confirmé').reduce((sum, r) => sum + r.prix, 0);
+
+            document.getElementById('total').textContent = total;
+            document.getElementById('confirmees').textContent = confirmees;
+            document.getElementById('annulees').textContent = annulees;
+            document.getElementById('revenu').textContent = '$' + revenu;
+        }
+
+        // Initialisation au chargement
+        window.onload = function() {
+            mettreAJourStatut('Dashboard chargé - Prêt à utiliser');
+            afficherReservations();
+            alert('🎉 DASHBOARD CHARGÉ! Vous pouvez maintenant tester les boutons.');
+        };
+
+        // Gestion des erreurs
+        window.onerror = function(message, source, lineno, colno, error) {
+            alert('ERREUR: ' + message + '\nLigne: ' + lineno);
+            mettreAJourStatut('ERREUR: ' + message);
+            return false;
+        };
+    </script>
+</body>
+</html>

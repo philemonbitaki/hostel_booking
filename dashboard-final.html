@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Admin - Réservations Réelles</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .status-confirmed { background-color: #dcfce7; color: #166534; }
+        .status-cancelled { background-color: #fecaca; color: #991b1b; }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div class="min-h-screen">
+        <!-- Header -->
+        <div class="bg-white shadow-sm border-b">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between items-center py-4">
+                    <div>
+                        <h1 class="text-2xl font-bold text-gray-900">Tableau de Bord Admin</h1>
+                        <p class="text-sm text-gray-500">Réservations des clients</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Contenu -->
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <!-- Actions -->
+            <div class="bg-white shadow rounded-lg p-4 mb-6">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h3 class="text-lg font-medium text-gray-900">Manage Bookings</h3>
+                        <p class="text-sm text-gray-500">View and manage all reservations</p>
+                    </div>
+                    <div class="flex space-x-3">
+                        <button 
+                            onclick="clearAllBookings()"
+                            class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors"
+                        >
+                            🗑️ Supprimer toutes les réservations
+                        </button>
+                        <button 
+                            onclick="reloadBookings()"
+                            class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                        >
+                            🔄 Recharger les réservations
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tableau des réservations -->
+            <div class="bg-white shadow rounded-lg">
+                <div class="px-4 py-5 sm:p-6">
+                    <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">
+                        Réservations des Clients
+                    </h3>
+                    
+                    <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
+                        <table class="min-w-full divide-y divide-gray-300">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Booking ID</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Guest</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Room</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Dates</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total Price</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="bookingsTableBody" class="bg-white divide-y divide-gray-200">
+                                <!-- Les réservations seront chargées ici -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Statistiques -->
+            <div class="mt-6 grid grid-cols-1 md:grid-cols-4 gap-6">
+                <div class="bg-white shadow rounded-lg p-6">
+                    <div class="text-sm font-medium text-gray-500">Total Réservations</div>
+                    <div id="totalBookings" class="text-2xl font-bold text-gray-900">0</div>
+                </div>
+                <div class="bg-white shadow rounded-lg p-6">
+                    <div class="text-sm font-medium text-gray-500">Confirmées</div>
+                    <div id="confirmedBookings" class="text-2xl font-bold text-green-600">0</div>
+                </div>
+                <div class="bg-white shadow rounded-lg p-6">
+                    <div class="text-sm font-medium text-gray-500">Annulées</div>
+                    <div id="cancelledBookings" class="text-2xl font-bold text-red-600">0</div>
+                </div>
+                <div class="bg-white shadow rounded-lg p-6">
+                    <div class="text-sm font-medium text-gray-500">Revenu Total</div>
+                    <div id="totalRevenue" class="text-2xl font-bold text-blue-600">$0</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Données initiales pour pouvoir les recharger
+        const initialBookings = [
+            {
+                id: 'be985b52-1234-5678-9abc-123456789001',
+                guestName: 'Marie Dubois',
+                guestEmail: 'marie.dubois@email.com',
+                roomName: 'Single',
+                roomPrice: 45,
+                checkIn: '2026-04-30',
+                checkOut: '2026-05-08',
+                amount: 360,
+                status: 'confirmed'
+            },
+            {
+                id: '193f2e11-1234-5678-9abc-123456789002',
+                guestName: 'Jean Martin',
+                guestEmail: 'jean.martin@email.com',
+                roomName: 'Single',
+                roomPrice: 45,
+                checkIn: '2026-05-07',
+                checkOut: '2026-05-16',
+                amount: 405,
+                status: 'cancelled'
+            },
+            {
+                id: 'b4afa924-1234-5678-9abc-123456789003',
+                guestName: 'Sophie Bernard',
+                guestEmail: 'sophie.bernard@email.com',
+                roomName: 'Single',
+                roomPrice: 45,
+                checkIn: '2026-05-09',
+                checkOut: '2026-05-20',
+                amount: 495,
+                status: 'confirmed'
+            },
+            {
+                id: 'c271bd25-1234-5678-9abc-123456789004',
+                guestName: 'Pierre Leroy',
+                guestEmail: 'pierre.leroy@email.com',
+                roomName: 'Deluxe Suite',
+                roomPrice: 150,
+                checkIn: '2026-05-08',
+                checkOut: '2026-05-23',
+                amount: 2250,
+                status: 'confirmed'
+            },
+            {
+                id: '3e173aec-1234-5678-9abc-123456789005',
+                guestName: 'Claire Petit',
+                guestEmail: 'claire.petit@email.com',
+                roomName: 'Single',
+                roomPrice: 45,
+                checkIn: '2026-04-30',
+                checkOut: '2026-05-06',
+                amount: 270,
+                status: 'confirmed'
+            },
+            {
+                id: 'f41eba4c-1234-5678-9abc-123456789006',
+                guestName: 'Lucas Robert',
+                guestEmail: 'lucas.robert@email.com',
+                roomName: 'Single',
+                roomPrice: 45,
+                checkIn: '2026-04-30',
+                checkOut: '2026-05-07',
+                amount: 315,
+                status: 'cancelled'
+            },
+            {
+                id: '0a65eff6-1234-5678-9abc-123456789007',
+                guestName: 'Emma Moreau',
+                guestEmail: 'emma.moreau@email.com',
+                roomName: 'Single',
+                roomPrice: 45,
+                checkIn: '2026-04-30',
+                checkOut: '2026-05-09',
+                amount: 405,
+                status: 'cancelled'
+            }
+        ];
+
+        // Tableau de réservations actif (copie des données initiales)
+        let bookings = [...initialBookings];
+
+        // Fonction pour formater les dates
+        function formatDate(dateStr) {
+            const date = new Date(dateStr);
+            return date.toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: '2-digit' }).replace(/\//g, '/');
+        }
+
+        // Fonction pour annuler une réservation
+        function cancelBooking(bookingId) {
+            if (confirm('Annuler cette réservation?')) {
+                const booking = bookings.find(b => b.id === bookingId);
+                if (booking) {
+                    booking.status = 'cancelled';
+                    renderBookings();
+                }
+            }
+        }
+
+        // Fonction pour supprimer toutes les réservations
+        function clearAllBookings() {
+            if (confirm('⚠️ Êtes-vous sûr de vouloir supprimer TOUTES les réservations?\n\nCette action est irréversible!')) {
+                if (confirm('🚨 DERNIERE CONFIRMATION\n\nToutes les réservations seront définitivement supprimées.\nVoulez-vous vraiment continuer?')) {
+                    // Vider le tableau des réservations
+                    bookings.length = 0;
+                    renderBookings();
+                    
+                    // Afficher un message de confirmation
+                    alert('✅ Toutes les réservations ont été supprimées avec succès!\n\nVous pouvez maintenant commencer à nouveau.');
+                }
+            }
+        }
+
+        // Fonction pour recharger les réservations initiales
+        function reloadBookings() {
+            if (confirm('🔄 Recharger toutes les réservations initiales?')) {
+                // Restaurer les réservations depuis les données initiales
+                bookings = [...initialBookings];
+                renderBookings();
+                
+                // Afficher un message de confirmation
+                alert('✅ Les réservations ont été rechargées avec succès!\n\nToutes les réservations initiales sont de retour.');
+            }
+        }
+
+        // Fonction pour afficher les réservations
+        function renderBookings() {
+            const tbody = document.getElementById('bookingsTableBody');
+            tbody.innerHTML = '';
+
+            bookings.forEach(booking => {
+                const row = document.createElement('tr');
+                row.className = 'hover:bg-gray-50';
+                
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-500">
+                        ${booking.id.substring(0, 8)}...
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm font-medium text-gray-900">${booking.guestName}</div>
+                        <div class="text-sm text-gray-500">${booking.guestEmail}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <div class="font-medium">${booking.roomName}</div>
+                        <div class="text-xs text-gray-400">$${booking.roomPrice}/night</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <div>${formatDate(booking.checkIn)}</div>
+                        <div class="text-xs">to ${formatDate(booking.checkOut)}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        $${booking.amount}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${booking.status === 'confirmed' ? 'status-confirmed' : 'status-cancelled'}">
+                            ${booking.status}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        ${booking.status === 'confirmed' ? `<button onclick="cancelBooking('${booking.id}')" class="text-red-600 hover:text-red-900">Cancel</button>` : ''}
+                    </td>
+                `;
+                
+                tbody.appendChild(row);
+            });
+
+            updateStats();
+        }
+
+        // Fonction pour mettre à jour les statistiques
+        function updateStats() {
+            const total = bookings.length;
+            const confirmed = bookings.filter(b => b.status === 'confirmed').length;
+            const cancelled = bookings.filter(b => b.status === 'cancelled').length;
+            const totalRevenue = bookings.filter(b => b.status === 'confirmed').reduce((sum, b) => sum + b.amount, 0);
+
+            document.getElementById('totalBookings').textContent = total;
+            document.getElementById('confirmedBookings').textContent = confirmed;
+            document.getElementById('cancelledBookings').textContent = cancelled;
+            document.getElementById('totalRevenue').textContent = `$${totalRevenue}`;
+        }
+
+        // Charger les réservations au chargement de la page
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Chargement du dashboard...');
+            console.log('Nombre de réservations:', bookings.length);
+            renderBookings();
+            console.log('Dashboard chargé avec succès!');
+        });
+    </script>
+</body>
+</html>

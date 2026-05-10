@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Bookings</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .status-confirmed { background-color: #dcfce7; color: #166534; }
+        .status-cancelled { background-color: #fecaca; color: #991b1b; }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div class="min-h-screen p-8">
+        <h1 class="text-3xl font-bold mb-6">📊 Admin Dashboard</h1>
+        
+        <!-- Management Section -->
+        <div class="bg-white rounded-lg shadow p-6 mb-6">
+            <h2 class="text-xl font-semibold mb-4">🎛️ Manage Bookings</h2>
+            <p class="text-gray-600 mb-4">View and manage all reservations</p>
+            
+            <div class="flex space-x-4 mb-6">
+                <button 
+                    onclick="clearAllBookings()"
+                    class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
+                >
+                    🗑️ DELETE ALL BOOKINGS
+                </button>
+                <button 
+                    onclick="reloadBookings()"
+                    class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+                >
+                    🔄 RELOAD BOOKINGS
+                </button>
+                <button 
+                    onclick="showCount()"
+                    class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+                >
+                    📊 SHOW COUNT
+                </button>
+            </div>
+            
+            <div id="status" class="bg-gray-100 p-4 rounded">
+                <strong>Status:</strong> <span id="statusText">Ready - Click a button</span>
+            </div>
+        </div>
+
+        <!-- Bookings List -->
+        <div class="bg-white rounded-lg shadow">
+            <div class="p-6">
+                <h3 class="text-lg font-semibold mb-4">📋 Customer Bookings</h3>
+                <div id="bookingsList">
+                    <!-- Bookings will be displayed here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistics -->
+        <div class="mt-6 grid grid-cols-4 gap-4">
+            <div class="bg-white rounded-lg shadow p-4">
+                <div class="text-sm text-gray-500">Total Bookings</div>
+                <div id="totalCount" class="text-2xl font-bold">0</div>
+            </div>
+            <div class="bg-white rounded-lg shadow p-4">
+                <div class="text-sm text-gray-500">Confirmed</div>
+                <div id="confirmedCount" class="text-2xl font-bold text-green-600">0</div>
+            </div>
+            <div class="bg-white rounded-lg shadow p-4">
+                <div class="text-sm text-gray-500">Cancelled</div>
+                <div id="cancelledCount" class="text-2xl font-bold text-red-600">0</div>
+            </div>
+            <div class="bg-white rounded-lg shadow p-4">
+                <div class="text-sm text-gray-500">Total Revenue</div>
+                <div id="revenue" class="text-2xl font-bold text-blue-600">$0</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initial booking data
+        const initialBookings = [
+            { id: '1', guestName: 'Marie Dubois', email: 'marie@email.com', room: 'New Generation', price: 360, status: 'confirmed' },
+            { id: '2', guestName: 'Jean Martin', email: 'jean@email.com', room: 'Annex', price: 405, status: 'cancelled' },
+            { id: '3', guestName: 'Sophie Bernard', email: 'sophie@email.com', room: 'Hudreb', price: 495, status: 'confirmed' },
+            { id: '4', guestName: 'Pierre Leroy', email: 'pierre@email.com', room: 'Campus View Residence', price: 2250, status: 'confirmed' },
+            { id: '5', guestName: 'Claire Petit', email: 'claire@email.com', room: "Scholar's Hub", price: 270, status: 'confirmed' },
+            { id: '6', guestName: 'Lucas Robert', email: 'lucas@email.com', room: 'Green Campus Dorm', price: 315, status: 'cancelled' },
+            { id: '7', guestName: 'Emma Moreau', email: 'emma@email.com', room: 'New Generation', price: 405, status: 'cancelled' }
+        ];
+
+        // Active bookings array
+        let bookings = [...initialBookings];
+
+        // Status update function
+        function updateStatus(message) {
+            document.getElementById('statusText').textContent = message;
+            console.log('STATUS:', message);
+        }
+
+        // Show count function
+        function showCount() {
+            alert('📊 NUMBER OF BOOKINGS: ' + bookings.length);
+            updateStatus('Count displayed: ' + bookings.length + ' bookings');
+        }
+
+        // Clear all bookings function
+        function clearAllBookings() {
+            updateStatus('Attempting to clear...');
+            alert('⚠️ YOU CLICKED ON "DELETE ALL"');
+            
+            if (confirm('🚨 WARNING! Do you really want to delete ALL bookings?')) {
+                bookings = [];
+                renderBookings();
+                updateStatus('✅ ALL BOOKINGS HAVE BEEN DELETED!');
+                alert('✅ SUCCESS: All bookings have been deleted!');
+            } else {
+                updateStatus('❌ Deletion cancelled');
+            }
+        }
+
+        // Reload bookings function
+        function reloadBookings() {
+            updateStatus('Attempting to reload...');
+            alert('🔄 YOU CLICKED ON "RELOAD"');
+            
+            if (confirm('🔄 Do you want to reload all initial bookings?')) {
+                bookings = [...initialBookings];
+                renderBookings();
+                updateStatus('✅ BOOKINGS RELOADED SUCCESSFULLY!');
+                alert('✅ SUCCESS: Bookings have been reloaded!');
+            } else {
+                updateStatus('❌ Reload cancelled');
+            }
+        }
+
+        // Render bookings function
+        function renderBookings() {
+            const container = document.getElementById('bookingsList');
+            
+            if (bookings.length === 0) {
+                container.innerHTML = '<div class="text-center py-8 text-gray-500">📭 NO BOOKINGS FOUND</div>';
+            } else {
+                let html = '<div class="space-y-2">';
+                bookings.forEach(booking => {
+                    const statusColor = booking.status === 'confirmed' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800';
+                    html += `
+                        <div class="border p-3 rounded flex justify-between items-center">
+                            <div>
+                                <strong>${booking.guestName}</strong> - ${booking.email}<br>
+                                <span class="text-sm text-gray-600">${booking.room} - $${booking.price}</span>
+                            </div>
+                            <span class="px-2 py-1 text-xs rounded-full ${statusColor}">${booking.status}</span>
+                        </div>
+                    `;
+                });
+                html += '</div>';
+                container.innerHTML = html;
+            }
+            
+            updateStats();
+        }
+
+        // Update statistics function
+        function updateStats() {
+            const total = bookings.length;
+            const confirmed = bookings.filter(b => b.status === 'confirmed').length;
+            const cancelled = bookings.filter(b => b.status === 'cancelled').length;
+            const revenue = bookings.filter(b => b.status === 'confirmed').reduce((sum, b) => sum + b.price, 0);
+
+            document.getElementById('totalCount').textContent = total;
+            document.getElementById('confirmedCount').textContent = confirmed;
+            document.getElementById('cancelledCount').textContent = cancelled;
+            document.getElementById('revenue').textContent = '$' + revenue;
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            updateStatus('Dashboard loaded - Ready to use');
+            renderBookings();
+            console.log('Dashboard initialized with', bookings.length, 'bookings');
+        });
+
+        // Error handling
+        window.onerror = function(msg, url, line) {
+            alert('ERROR: ' + msg + '\nLine: ' + line);
+            updateStatus('ERROR: ' + msg);
+            return false;
+        };
+    </script>
+</body>
+</html>
