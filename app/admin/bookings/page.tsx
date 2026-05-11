@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import AdminProtection from '../components/AdminProtection';
-import { deleteBooking } from '../../lib/bookings-storage';
+import { deleteBooking } from '../../../lib/bookings-storage';
 
 interface BookingWithGuest {
   id: string;
